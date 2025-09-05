@@ -1,14 +1,25 @@
-return { 'https://github.com/neovim/nvim-lspconfig',
-'hrsh7th/cmp-nvim-lsp',
-'hrsh7th/cmp-buffer',
-'hrsh7th/cmp-path',
-'hrsh7th/cmp-cmdline',
-'saadparwaiz1/cmp_luasnip',
-'L3MON4D3/LuaSnip',
-'hrsh7th/nvim-cmp',
-{
-    "windwp/nvim-autopairs",
-    event = "InsertEnter",
-    config = true
-}
+return {
+  {
+    "neovim/nvim-lspconfig",
+    config = function()
+      require("lspconfig").lua_ls.setup {  }
+
+      vim.api.nvim_create_autocmd('LspAttach', {
+        callback = function(args)
+          local c = vim.lsp.get_client_by_id(args.data.client_id)
+          if not c then return end
+
+          if vim.bo.filetype == "lua" then
+            -- Format the current buffer on save
+            vim.api.nvim_create_autocmd('BufWritePre', {
+              buffer = args.buf,
+              callback = function()
+                vim.lsp.buf.format({ bufnr = args.buf, id = c.id })
+              end,
+            })
+          end
+        end,
+      })
+    end,
+  }
 }
